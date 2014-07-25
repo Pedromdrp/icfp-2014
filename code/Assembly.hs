@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveFunctor #-}
 module Assembly where
 import Data.Map (Map)
 import qualified Data.Map as Map
@@ -32,7 +33,7 @@ data Instr a
         | TAP Literal
         | TRAP Literal
         | ST Literal Literal
-        deriving (Eq, Show)
+        deriving (Eq, Show, Functor)
 
 newtype MachineCode = MC [Instr Integer]
 instance Show MachineCode where
@@ -40,6 +41,20 @@ instance Show MachineCode where
 
 
 newtype Assembly a = Assembly (Map a [Instr a])
+
+assemble :: Assembly Integer -> MachineCode
+assemble (Assembly m) = MC ass
+        where
+                codes = Map.toAscList m
+                purecodes :: [[Instr Integer]]
+                purecodes = map snd codes
+                offs = scanl1 (+) $ map length purecodes
+                offsMap = Map.fromAscList $ zipWith (\ (x, y) z -> (x, z)) codes (0:offs)
+                getOffs x = toInteger $ Map.findWithDefault (error $ "assemble: Invalid label " ++ show x) x offsMap
+                fgos :: Instr Integer -> Instr Integer
+                fgos = fmap getOffs
+                ass = concatMap (map fgos) purecodes
+
 
 emptyAssembly = Assembly Map.empty
 
@@ -64,3 +79,9 @@ runAM s = let (res, (_, ass)) = runState s (0, emptyAssembly) in (res, ass)
 execAM :: AM a -> Assembly Integer
 execAM = snd . runAM
 
+
+testAssembler = assemble $ execAM $ do
+        main <- freshLabel
+        body <- freshLabel
+        setCode main [LDC 21, LDF body, AP 1, RTN]
+        setCode body [LD 0 0, LD 0 0, ADD, RTN]
