@@ -39,14 +39,14 @@ compileAM rho (App e es) =
 compileAM rho (Lam xs e) =
   do l <- freshLabel
      c <- compileAM (xs : rho) e
-     setCode l c
+     setCode l (c ++ [RTN])
      return [LDF l]
 compileAM rho (Let ves e) =
   do cs <- mapM (compileAM (vs : rho)) es
      l <- freshLabel
      c <- compileAM (vs : rho) e
-     setCode l c
-     return (DUM n : concat cs ++ [LDF l, TRAP n])
+     setCode l (c ++ [RTN])
+     return (DUM n : concat cs ++ [LDF l, RAP n])
        where vs = map fst ves
              es = map snd ves
              n  = toInteger (length ves)
@@ -57,10 +57,10 @@ compileAM rho (BOp e1 op e2) =
 compileAM rho (IfZ e et ef) =
   do lt <- freshLabel
      ct <- compileAM rho et
-     setCode lt ct
+     setCode lt (ct ++ [JOIN])
      lf <- freshLabel
      cf <- compileAM rho ef
-     setCode lf cf
+     setCode lf (cf ++ [JOIN])
      return [SEL lt lf]
 compileAM rho (Pair e1 e2) =
   do c1 <- compileAM rho e1
@@ -76,7 +76,7 @@ compileAM rho (Snd e) =
 compile e = execAM $ do
   main <- freshLabel
   c <- compileAM [] e
-  setCode main c
+  setCode main (c ++ [RTN])
 
 testCompile = assemble . compile
 
