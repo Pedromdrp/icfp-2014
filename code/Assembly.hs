@@ -39,4 +39,12 @@ instance Show MachineCode where
 
 
 newtype Assembly a = Assembly (Data.Map a [Instr a])
-        
+
+
+type AM a = ()
+
+freshLabel :: AM Integer
+freshLabel = undefined
+setCode :: Integer -> [Instr Integer] -> AM ()
+setCode = undefined
+
