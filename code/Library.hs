@@ -8,6 +8,14 @@ x .* y = BOp x Mul y
 x ./ y = BOp x Div y
 x .= y = BOp x CEq y
 
+fn $. arg = App (Var fn) arg
+
+listMatch :: Exp -- ^ List
+	-> Exp 			-- ^ Empty list
+	-> (Exp -> Exp -> Exp)	-- ^ x : xs
+	-> Exp
+listMatch list base rec = IfZ (IsAtom list) (rec (Fst list) (Snd list)) base
+
 -- nth (index, list): return the index-th item in the list
 --      0-based; does not check for length overrun
 lib_nth = Lam ["index", "list"] $
@@ -55,6 +63,10 @@ lib_reverseAcc = Lam ["l", "r"] $
 -- reverse (list) : reverse the list
 lib_reverse = Lam ["list"] $ App (Var "reverseAcc") [Var "list", Num 0]
 
+lib_foldl = Lam ["f", "cur", "l"] $
+	listMatch (Var "l") (Var "cur")
+		(\hd tl -> "foldl" $. [Var "f", "f" $. [Var "cur", hd], tl])
+
 withLib = Let [("nth",lib_nth),
                 ("lengthAcc",lib_lengthAcc),
                 ("length",lib_length),
@@ -62,7 +74,8 @@ withLib = Let [("nth",lib_nth),
                 ("concat",lib_concat),
                 ("filter",lib_filter),
                 ("reverseAcc",lib_reverseAcc),
-                ("reverse",lib_reverse)]
+                ("reverse",lib_reverse),
+		("foldl",lib_foldl)]
 
 filterTest = withLib $ App (Var "filter") [
                 (Lam ["x"] ((Var "x" ./ Num 2) .= (Num 1))),
@@ -75,3 +88,7 @@ mapTest = withLib $ App (Var "map") [
 reverseTest = withLib $ App (Var "reverse") [mkList [Num x | x <- [0..3]]]
 
 concatTest = withLib $ App (Var "concat") (map (mkList . map Num) [[0,1], [3,2]])
+
+foldlTest = withLib $ "foldl" $. [Lam ["x", "y"] (Var "x" .+ Var "y"),
+				Num 0, mkList [Num x | x <- [0..4]]]
+		
