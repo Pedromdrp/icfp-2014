@@ -73,6 +73,9 @@ compileAM rho (Fst e) =
 compileAM rho (Snd e) =
   do c <- compileAM rho e
      return (c ++ [CDR])
+compileAM rho (IsAtom e) =
+  do c <- compileAM rho e
+     return (c ++ [ATOM])
 
 compile e = execAM $ do
   main <- freshLabel
@@ -80,6 +83,8 @@ compile e = execAM $ do
   setCode main (c ++ [RTN])
 
 testCompile = assemble . compile
+
+optCompile = assemble . tailOpt . tailOpt1 . compile
 
 prog1 = BOp (Num 3) Add (Num 2)
 prog2 = Lam ["x"] (BOp (Var "x") Add (Num 2))

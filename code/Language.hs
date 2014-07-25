@@ -15,4 +15,11 @@ data Exp
   | Pair Exp Exp
   | Fst  Exp
   | Snd  Exp
+  | IsAtom Exp
   deriving (Show, Eq)
+
+mkList :: [Exp] -> Exp
+mkList [] = Num 0
+mkList (x : xs) = Pair x (mkList xs)
+
+ifNZ test tt ff = IfZ test ff tt

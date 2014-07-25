@@ -4,6 +4,7 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.List
 import Control.Monad.State
+import Control.Arrow
 
 type Literal = Integer
 
@@ -44,6 +45,10 @@ instance Show MachineCode where
 
 newtype Assembly a = Assembly (Map a [Instr a])
 
+instance Show a => Show (Assembly a) where
+        show (Assembly m) = intercalate "\n" $ map show $ Map.toList m
+
+
 assemble :: Assembly Integer -> MachineCode
 assemble (Assembly m) = MC ass
         where
@@ -81,9 +86,46 @@ runAM s = let (res, (_, ass)) = runState s (0, emptyAssembly) in (res, ass)
 execAM :: AM a -> Assembly Integer
 execAM = snd . runAM
 
-
 testAssembler = assemble $ execAM $ do
         main <- freshLabel
         body <- freshLabel
         setCode main [LDC 21, LDF body, AP 1, RTN]
         setCode body [LD 0 0, LD 0 0, ADD, RTN]
+
+
+-- Replace the following instruction pairs with single instructions
+-- SEL; JOIN -> TSEL
+-- AP; RTN -> TAP
+-- RAP; RTN -> TRAP
+tailOpt :: Assembly a -> Assembly a
+tailOpt (Assembly m) = Assembly (fmap optRoutine m)
+        where
+                optRoutine (SEL x y: JOIN : []) = [TSEL x y]
+                optRoutine (AP x : RTN : []) = [TAP x]
+                optRoutine (RAP x : RTN : []) = [TRAP x]
+                optRoutine (x : xs) = x : optRoutine xs
+                optRoutine [] = []
+
+-- Rewrite:
+--   SEL a b; RTN
+--   a: ...; JOIN
+--   b: ...; JOIN
+-- to
+--   TSEL a b
+--   a: ...; RTN
+--   b: ...; RTN
+tailOpt1 :: (Ord a) => Assembly a -> Assembly a
+tailOpt1 (Assembly m) = Assembly (opt (Map.keys m) m)
+        where
+                opt [] mm = mm
+                opt (k : ks) mm = let c = Map.findWithDefault undefined k mm in
+                        case optSELRTN c of
+                                (Just (c', (x, y))) -> opt (x : y : ks)
+                                                (Map.insert k c' $ Map.adjust adj x $ Map.adjust adj y mm)
+                                Nothing -> opt ks mm
+                optSELRTN [] = Nothing
+                optSELRTN (SEL x y : RTN : []) = Just ([TSEL x y], (x, y))
+                optSELRTN (x : xs) = liftM (first (x :)) $ optSELRTN xs
+                adj l = init l ++ [RTN]
+
+
