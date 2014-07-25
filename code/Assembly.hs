@@ -33,6 +33,8 @@ data Instr a
         | TAP Literal
         | TRAP Literal
         | ST Literal Literal
+        | DBUG
+        | BRK
         deriving (Eq, Show, Functor)
 
 newtype MachineCode = MC [Instr Integer]
