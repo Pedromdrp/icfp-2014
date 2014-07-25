@@ -6,7 +6,7 @@ import Assembly
 
 type Env = [[Var]]
 
-findVar' _ [] _ = undefined
+findVar' _ [] x = error $ "Undeclared identifier " ++ x
 findVar' n (xs : xss) x =
   case elemIndex x xs of
     Just m  -> (n, toInteger m)
@@ -82,4 +82,4 @@ testCompile = assemble . compile
 
 prog1 = BOp (Num 3) Add (Num 2)
 prog2 = Lam ["x"] (BOp (Var "x") Add (Num 2))
-
+prog3 = Let [("fac", Lam ["x"] (IfZ (Var "x") (Num 1) (BOp (Var "x") Mul (App (Var "fac") [BOp (Var "x") Sub (Num 1)]))))] (App (Var "fac") [Num 5])
