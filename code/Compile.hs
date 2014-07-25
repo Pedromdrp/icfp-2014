@@ -55,13 +55,14 @@ compileAM rho (BOp e1 op e2) =
      c2 <- compileAM rho e2
      return (compileOp c1 c2 op)
 compileAM rho (IfZ e et ef) =
-  do lt <- freshLabel
+  do test <- compileAM rho e
+     lt <- freshLabel
      ct <- compileAM rho et
      setCode lt (ct ++ [JOIN])
      lf <- freshLabel
      cf <- compileAM rho ef
      setCode lf (cf ++ [JOIN])
-     return [SEL lt lf]
+     return (test ++ [SEL lf lt])
 compileAM rho (Pair e1 e2) =
   do c1 <- compileAM rho e1
      c2 <- compileAM rho e2
