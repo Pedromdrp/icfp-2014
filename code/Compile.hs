@@ -88,6 +88,10 @@ compileAM rho (AAfter e1 v e2) =
      return (c1 ++ c2 ++ [ST fi vi])
   where
 	(fi, vi) = findVar rho v
+compileAM rho (Trace e1 e2) = 
+  do c1 <- compileAM rho e1
+     c2 <- compileAM rho e2
+     return (c1 ++ [DBUG] ++ c2)
 
 compile e = execAM $ do
   main <- freshLabel

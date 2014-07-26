@@ -17,6 +17,14 @@ listMatch :: Exp -- ^ List
         -> Exp
 listMatch list base rec = IfZ (IsAtom list) (rec (Fst list) (Snd list)) base
 
+-- inline min (don't use when arguments are expensive or side-effecting)
+ilMin x y = ifNZ (x .< y) x y
+ilMax x y = IfZ (x .< y) x y
+
+trip (x, y, z) = Pair x (Pair y z)
+quad (w, x, y, z) = Pair w (Pair x (Pair y z))
+quint (v, w, x, y, z) = Pair v (Pair w (Pair x (Pair y z)))
+
 -- nth (index, list): return the index-th item in the list
 --      0-based; does not check for length overrun
 lib_nth = Lam ["index", "list"] $
@@ -27,9 +35,17 @@ lib_nth = Lam ["index", "list"] $
                         Snd (Var "list")])
 -- replace (index, value, list) : return the list modified by replacing the item at the index with the new value
 lib_replace = Lam ["idx", "val", "l"] $
-        listMatch "l"
+        listMatch (Var "l")
                 (Num 0)
-                (\hd tl -> IfZ (Var "idx") (Pair (Var "val") tl) (Pair hd ("replace" $. [(Var "idx"), (Var "val"), tl])))
+                (\hd tl -> IfZ (Var "idx") (Pair (Var "val") tl) (Pair hd ("replace" $. [Var "idx" .- Num 1, Var "val", tl])))
+-- update (index, f, list) : return the list modified by applying f to the index-th item
+lib_update = Lam ["idx", "f", "l"] $
+        listMatch (Var "l")
+                (Num 0)
+                (\hd tl -> IfZ (Var "idx")
+                        (Pair ("f" $. [hd]) tl)
+                        (Pair hd ("update" $. [Var "idx" .- Num 1, Var "f", tl])))
+
 -- lengthAcc (list, acc): accumulating length function
 lib_lengthAcc = Lam ["list", "acc"] $
         IfZ (IsAtom (Var "list"))
@@ -78,12 +94,13 @@ lib_foldl = Lam ["f", "cur", "l"] $
 lib_find = Lam ["val", "list"] $
         "findAcc" $. [Var "val", Var "list", Num 0]
 lib_findAcc = Lam ["val", "list", "pos"] $
-        listMatch (Var "list") (Num -1)
+        listMatch (Var "list") (Num (-1))
                 (\hd tl -> ifNZ (Var "val" .= hd) (Var "pos")
                         ("findAcc" $. [Var "val", tl, Var "pos" .+ Num 1]))
 
 withLib = Let [("nth",lib_nth),
                 ("replace",lib_replace),
+                ("update",lib_update),
                 ("lengthAcc",lib_lengthAcc),
                 ("length",lib_length),
                 ("map",lib_map),
