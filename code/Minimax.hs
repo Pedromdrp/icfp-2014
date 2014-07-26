@@ -5,26 +5,47 @@ import Library
 
 x .|| y = (IfZ (x) (Num 1) (IfZ (y) (Num 1) (Num 0)))
 
-maxLoop = Lam ["best", "list", "depth"] $
-        IfZ (IsAtom (Var "list"))
+movesAux = Lam["node", "move"] $
+        IfZ (BOp (Var "move") CGt (Num 3))
+                (Num 0)
+                (IfZ (BOp (Fst (Var "node")) CGt (Num 0))
+                        (Pair (Var "move") ((App (Var "movesAux") [Snd (Var "node"), Var "move" .+ Num 1])))
+                        (App (Var "movesAux") [Snd (Var "node"), Var "move" .+ Num 1]))
+
+moves = Lam["node"] $
+        Let [("movesAux", movesAux)]
+                (App (Var "movesAux") [Var "node", Num 0]) 
+
+maxLoop = Lam ["node", "best", "moves", "depth"] $
+        IfZ (IsAtom (Var "moves"))
                 (Var "best")
-                (Let [("val", App (Var "minimax") [Fst (Var "list"), Var "depth" .- Num 1, Num 1])]
-                        (App (Var "maxLoop") [IfZ (BOp (Var "val") CGt (Var "best")) (Var "val") (Var "best"), Snd (Var "list"), Var "depth"]))
+                (Let [("val", App (Var "minimax") [App (Var "play") [Var "node", Fst (Var "moves")], Var "depth" .- Num 1, Num 1])]
+                        (App (Var "maxLoop") [Var "node", IfZ (BOp (Var "val") CGt (Var "best")) (Var "val") (Var "best"), Snd (Var "moves"), Var "depth"]))
 
-minLoop = Lam ["best", "list", "depth"] $
-        IfZ (IsAtom (Var "list"))
+minLoop = Lam ["node", "best", "moves", "depth"] $
+        IfZ (IsAtom (Var "moves"))
                 (Var "best")
-                (Let [("val", App (Var "minimax") [Fst (Var "list"), Var "depth" .- Num 1, Num 0])]
-                        (App (Var "minLoop") [IfZ (BOp (Var "val") CLt (Var "best")) (Var "val") (Var "best"), Snd (Var "list"), Var "depth"]))
-
-
+                (Let [("val", App (Var "minimax") [App (Var "play") [Var "node", Fst (Var "moves")], Var "depth" .- Num 1, Num 0])]
+                        (App (Var "minLoop") [Var "node", IfZ (BOp (Var "val") CLt (Var "best")) (Var "val") (Var "best"), Snd (Var "moves"), Var "depth"]))
 
 minimax = Lam ["node", "depth", "maxPlayer"] $
         Let [("maxLoop", maxLoop), ("minLoop", minLoop)]
                 (IfZ ((BOp (Var "index") CEq (Num 0)) .|| (App (Var "terminal") [Var "node"]))
                         (App (Var "heuristic") [Var "node"])
-                        (Let [("list", App (Var "successors") [Var "node"])]
+                        (Let [("list", App (Var "moves") [Var "node"])]
                                 (IfZ (Var "maxPlayer")
-                                        (App (Var "maxLoop") [Num (-1000000), Var "list", Var "depth"])
-                                        (App (Var "minLoop") [Num 1000000, Var "list", Var "depth"]))))
+                                        (App (Var "maxLoop") [Var "node", Num (-1000000), Var "list", Var "depth"])
+                                        (App (Var "minLoop") [Var "node", Num 1000000, Var "list", Var "depth"]))))
+
+findMoveLoop = Lam ["node", "best", "moves", "depth"] $
+        IfZ (IsAtom (Var "moves"))
+                (Var "best")
+                (Let [("val", App (Var "minimax") [App (Var "play") [Var "node", Fst (Var "moves")], Var "depth" .- Num 1, Num 1])]
+                        (App (Var "maxLoop") [Var "node", IfZ (BOp (Var "val") CGt (Snd (Var "best"))) (Pair (Fst (Var "moves")) (Var "val")) (Var "best"), Snd (Var "moves"), Var "depth"]))
+
+
+
+findMove = Lam ["node", "depth"] $
+        Let [("findMoveLoop", findMoveLoop), ("list", App (Var "move") [Var "node"])]
+                (Fst (App (Var "findMoveLoop") [Var "node", Pair (Num (-1)) (Num (-1000000)), Var "list", Var "depth"]))
 
