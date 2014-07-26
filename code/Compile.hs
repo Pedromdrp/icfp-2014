@@ -76,6 +76,18 @@ compileAM rho (Snd e) =
 compileAM rho (IsAtom e) =
   do c <- compileAM rho e
      return (c ++ [ATOM])
+compileAM rho (ABefore v e1 e2) =
+  do c1 <- compileAM rho e1
+     c2 <- compileAM rho e2
+     return (c1 ++ [ST fi vi] ++ c2)
+  where
+	(fi, vi) = findVar rho v
+compileAM rho (AAfter e1 v e2) =
+  do c1 <- compileAM rho e1
+     c2 <- compileAM rho e2
+     return (c1 ++ c2 ++ [ST fi vi])
+  where
+	(fi, vi) = findVar rho v
 
 compile e = execAM $ do
   main <- freshLabel
