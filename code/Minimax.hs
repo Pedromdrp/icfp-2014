@@ -5,6 +5,17 @@ import Library
 
 x .|| y = (IfZ (x) (Num 1) (IfZ (y) (Num 1) (Num 0)))
 
+movesAux = Lam["node", "move"] $
+        IfZ (BOp (Var "move") CGt (Num 3))
+                (Num 0)
+                (IfZ (BOp (Fst (Var "node")) CGt (Num 0))
+                        (Pair (Var "move") ((App (Var "movesAux") [Snd (Var "node"), Var "move" .+ Num 1])))
+                        (App (Var "movesAux") [Snd (Var "node"), Var "move" .+ Num 1]))
+
+moves = Lam["node"] $
+        Let [("movesAux", movesAux)]
+                (App (Var "movesAux") [Var "node", Num 0]) 
+
 maxLoop = Lam ["node", "best", "moves", "depth"] $
         IfZ (IsAtom (Var "moves"))
                 (Var "best")
