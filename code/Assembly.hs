@@ -40,13 +40,17 @@ data Instr a
 
 newtype MachineCode = MC [Instr Integer]
 instance Show MachineCode where
-        show (MC l) = intercalate "\n" $ map show l
+        show (MC l) = intercalate "\n" $ map (filterParens . show) l
+                where
+                        filterParens = filter (\x -> not (x == '(' || x == ')'))
 
 
 newtype Assembly a = Assembly (Map a [Instr a])
 
 instance Show a => Show (Assembly a) where
-        show (Assembly m) = intercalate "\n" $ map show $ Map.toList m
+        show (Assembly m) = intercalate "\n" $ map (filterParens . show) $ Map.toList m
+                where
+                        filterParens = filter (\x -> not (x == '(' || x == ')'))
 
 
 assemble :: Assembly Integer -> MachineCode
@@ -61,6 +65,15 @@ assemble (Assembly m) = MC ass
                 fgos :: Instr Integer -> Instr Integer
                 fgos = fmap getOffs
                 ass = concatMap (map fgos) purecodes
+
+codePointers (Assembly m) = offsMap
+        where
+                codes = Map.toAscList m
+                purecodes :: [[Instr Integer]]
+                purecodes = map snd codes
+                offs = scanl1 (+) $ map length purecodes
+                offsMap = zipWith (\ (x, y) z -> (x, z)) codes (0:offs)
+
 
 
 emptyAssembly = Assembly Map.empty

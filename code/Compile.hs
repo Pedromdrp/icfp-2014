@@ -1,5 +1,6 @@
 module Compile where
 
+import System.IO
 import Data.List
 import Language
 import Assembly
@@ -101,6 +102,10 @@ compile e = execAM $ do
 testCompile = assemble . compile
 
 optCompile = assemble . tailOpt . tailOpt1 . compile
+
+compileToFile f c = writeFile f (show $ optCompile c)
+
+optCP = codePointers  . tailOpt . tailOpt1 . compile
 
 prog1 = BOp (Num 3) Add (Num 2)
 prog2 = Lam ["x"] (BOp (Var "x") Add (Num 2))
