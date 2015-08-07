@@ -1,4 +1,9 @@
+module LCGen (lcgen) where
+
+
 import Data.Bits
+
+
 
 multiplier = 1103515245
 increment = 12345

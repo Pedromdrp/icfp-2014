@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveGeneric #-}
+module Datastructures where
 
 import GHC.Generics
 import Data.Vector
@@ -26,3 +27,4 @@ data Configuration = Configuration {
         configSourceSeeds :: [Int]
         } deriving (Show, Generic)
 
+-- data State = State {
