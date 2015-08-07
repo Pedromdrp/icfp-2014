@@ -7,8 +7,6 @@ import Control.Applicative
 import Control.Monad
 import qualified Data.ByteString.Lazy as B
 
---instance FromJSON Cell
-
 instance FromJSON Cell where
  parseJSON (Object v) =
     Cell <$> v .: "x"
