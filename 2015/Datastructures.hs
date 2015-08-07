@@ -15,7 +15,7 @@ data Unit = Unit {
 
 data Configuration = Configuration {
         configID :: Int,
-        configUnits :: [unit],
+        configUnits :: [Unit],
         configWidth :: Int,
         configHeight :: Int,
         configFilled :: [Cell],
