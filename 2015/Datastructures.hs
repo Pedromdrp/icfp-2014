@@ -28,15 +28,18 @@ data Configuration = Configuration {
 
 data Board = Board {
         boardWidth :: Int,
+        boardHeight :: Int,
         boardBits :: Integer
         }
 
+emptyBoard :: Int -> Int -> Board
+emptyBoard width height = Board width height 0
 
 boardLookup :: Board -> Cell -> Bool
-boardLookup (Board w bs) c = testBit bs ((cellX c) + (cellY c) * w)
+boardLookup (Board w _ bs) c = testBit bs ((cellX c) + (cellY c) * w)
 
 boardFill :: Board -> Cell -> Board
-boardFill (Board w bs) c = Board w $ setBit bs ((cellX c) + (cellY c) * w)
+boardFill (Board w h bs) c = Board w h $ setBit bs ((cellX c) + (cellY c) * w)
 
 boardFillAll :: Board -> [Cell] -> Board
 boardFillAll = foldl boardFill
@@ -48,7 +51,7 @@ data State = State {
         }
 
 showBoardCell :: Board -> Cell -> String
-showBoardCell b c = if boardLookup b c then "-+-" else "   "
+showBoardCell b c = if boardLookup b c then "XXX" else "   "
 
 showGrid :: Int -> Int -> (Cell -> String) -> String
 showGrid w h sh = concatMap line [0..h-1] ++ if h `mod` 2 == 0 then oddDiags else evenDiags
@@ -59,3 +62,6 @@ showGrid w h sh = concatMap line [0..h-1] ++ if h `mod` 2 == 0 then oddDiags els
                 line :: Int -> String
                 line y = (if y `mod` 2 == 0 then oddDiags else evenDiags ++ "  ")
                         ++ concat ["|" ++ sh (Cell x y) | x <- [0..w-1]] ++ "|\n"
+
+instance Show Board where
+        show b = showGrid (boardWidth b) (boardHeight b) (showBoardCell b)
