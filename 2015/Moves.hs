@@ -1,4 +1,4 @@
-module Moves where
+module Moves (unitAdd, unitRotateCW, unitRotateACW) where
 
 import Datastructures
 
