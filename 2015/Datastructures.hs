@@ -2,6 +2,8 @@
 module Datastructures where
 
 import GHC.Generics
+import Data.List
+import Data.Bits
 -- import qualified Data.Vector as V
 
 data Cell = Cell {
@@ -44,3 +46,16 @@ data State = State {
         board :: Board,
         source :: [Unit]
         }
+
+showBoardCell :: Board -> Cell -> String
+showBoardCell b c = if boardLookup b c then "-+-" else "   "
+
+showGrid :: Int -> Int -> (Cell -> String) -> String
+showGrid w h sh = concatMap line [0..h-1] ++ if h `mod` 2 == 0 then oddDiags else evenDiags
+        where 
+                oddDiags :: String
+                oddDiags = concat (replicate w " / \\") ++ " /\n"
+                evenDiags = concat (replicate w " \\ /")  ++ " \\\n"
+                line :: Int -> String
+                line y = (if y `mod` 2 == 0 then oddDiags else evenDiags ++ "  ")
+                        ++ concat ["|" ++ sh (Cell x y) | x <- [0..w-1]] ++ "|\n"
