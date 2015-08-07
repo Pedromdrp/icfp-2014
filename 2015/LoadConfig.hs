@@ -2,6 +2,7 @@ module LoadConfig where
 
 import Datastructures
 import LCGen
+import Moves
 
 configToStates :: Configuration -> [State]
 configToStates cfg = do
@@ -18,6 +19,8 @@ configToStates cfg = do
                 brd = boardFillAll (emptyBoard w h) (configFilled cfg)
 
 centerUnit :: Int -> Unit -> Unit
--- ^Translate the given unit to its starting position
--- TODO: IMPLEMENT THIS!
-centerUnit _ u = u
+centerUnit w u@(Unit c p) = addUnit u (offset - minWidth)  (-minHeight)
+  where minHeight = minimum (map cellY c)
+        minWidth = minimum (map cellX c)
+        width = maximum (map cellX c) - minWidth
+        offset = quot (w - width) 2

@@ -1,4 +1,4 @@
-module Moves (unitAdd, unitRotateCW, unitRotateACW) where
+module Moves (addUnit, rotateCWUnit, rotateACWUnit) where
 
 import Datastructures
 
@@ -15,26 +15,26 @@ toCube (Cell x y) = Cube newX (- newX - y) y
 toCell :: Cube -> Cell
 toCell (Cube x y z) = Cell (x + (quot (z - (rem z 2)) 2)) z
 
-cubeRotateCW :: Cube -> Cube
-cubeRotateCW (Cube x y z) = Cube (-z) (-x) (-y)
+rotateCWCube :: Cube -> Cube
+rotateCWCube (Cube x y z) = Cube (-z) (-x) (-y)
 
-cubeRotateACW :: Cube -> Cube
-cubeRotateACW (Cube x y z) = Cube (-y) (-z) (-x)
+rotateACWCube :: Cube -> Cube
+rotateACWCube (Cube x y z) = Cube (-y) (-z) (-x)
 
-cubeAdd :: Cube -> Int -> Int -> Int -> Cube
-cubeAdd (Cube x y z) xx yy zz = Cube (x + xx) (y + yy) (z + zz)
+addCube :: Cube -> Int -> Int -> Int -> Cube
+addCube (Cube x y z) xx yy zz = Cube (x + xx) (y + yy) (z + zz)
 
-cellAdd :: Cell -> Int -> Int -> Cell
-cellAdd c xx yy = toCell (cubeAdd (toCube c) (cubeX aux) (cubeY aux) (cubeZ aux))
+addCell :: Cell -> Int -> Int -> Cell
+addCell c xx yy = toCell (addCube (toCube c) (cubeX aux) (cubeY aux) (cubeZ aux))
   where aux = toCube (Cell xx yy)
 
-unitAdd :: Unit -> Int -> Int -> Unit
-unitAdd (Unit cells pivot) x y = Unit (map (\c -> cellAdd c x y) cells) (cellAdd pivot x y)
+addUnit :: Unit -> Int -> Int -> Unit
+addUnit (Unit cells pivot) x y = Unit (map (\c -> addCell c x y) cells) (addCell pivot x y)
 
-unitRotateCW :: Unit -> Unit
-unitRotateCW u@(Unit _ (Cell x y)) = unitAdd (Unit (map (toCell . cubeRotateCW . toCube) (unitMembers newUnit)) (unitPivot newUnit)) x y
-  where newUnit = unitAdd u (-x) (-y)
+rotateCWUnit :: Unit -> Unit
+rotateCWUnit u@(Unit _ (Cell x y)) = addUnit (Unit (map (toCell . rotateCWCube . toCube) (unitMembers newUnit)) (unitPivot newUnit)) x y
+  where newUnit = addUnit u (-x) (-y)
 
-unitRotateACW :: Unit -> Unit
-unitRotateACW u@(Unit _ (Cell x y)) = unitAdd (Unit (map (toCell . cubeRotateACW . toCube) (unitMembers newUnit)) (unitPivot newUnit)) x y
-  where newUnit = unitAdd u (-x) (-y)
+rotateACWUnit :: Unit -> Unit
+rotateACWUnit u@(Unit _ (Cell x y)) = addUnit (Unit (map (toCell . rotateACWCube . toCube) (unitMembers newUnit)) (unitPivot newUnit)) x y
+  where newUnit = addUnit u (-x) (-y)
