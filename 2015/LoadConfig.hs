@@ -19,7 +19,7 @@ configToStates cfg = do
                 brd = boardFillAll (emptyBoard w h) (configFilled cfg)
 
 centerUnit :: Int -> Unit -> Unit
-centerUnit w u@(Unit c p) = addUnit u (offset - minWidth)  (-minHeight)
+centerUnit w u@(Unit c p) = addUnit u (offset - minWidth) (-minHeight)
   where minHeight = minimum (map cellY c)
         minWidth = minimum (map cellX c)
         width = maximum (map cellX c) - minWidth
