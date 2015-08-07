@@ -2,7 +2,7 @@
 module Datastructures where
 
 import GHC.Generics
-import Data.Vector
+-- import qualified Data.Vector as V
 
 newtype Cell = Cell (Int, Int) deriving (Show, Generic)
 
@@ -27,4 +27,23 @@ data Configuration = Configuration {
         configSourceSeeds :: [Int]
         } deriving (Show, Generic)
 
--- data State = State {
+data Board = Board {
+        boardWidth :: Int,
+        boardBits :: Integer
+        }
+
+
+boardLookup :: Board -> Cell -> Bool
+boardLookup (Board w bs) c = testBit bs ((cellX c) + (cellY c) * w)
+
+boardFill :: Board -> Cell -> Board
+boardFill (Board w bs) c = Board w $ setBit bs ((cellX c) + (cellY c) * w)
+
+boardFillAll :: Board -> [Cell] -> Board
+boardFillAll = foldl boardFill
+
+data State = State {
+        stateUnit :: Unit,
+        board :: Board,
+        source :: [Unit]
+        }
