@@ -4,13 +4,10 @@ module Datastructures where
 import GHC.Generics
 import Data.Vector
 
-newtype Cell = Cell (Int, Int) deriving (Show, Generic)
-
-cellX :: Cell -> Int
-cellX (Cell (x, y)) = x
-
-cellY :: Cell -> Int
-cellY (Cell (x, y)) = y
+data Cell = Cell {
+        cellX :: Int,
+        cellY :: Int
+        } deriving (Show)
 
 data Unit = Unit {
         unitMembers :: [Cell],
