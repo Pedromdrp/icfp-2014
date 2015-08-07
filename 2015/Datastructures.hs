@@ -44,6 +44,17 @@ boardFill (Board w h bs) c = Board w h $ setBit bs ((cellX c) + (cellY c) * w)
 boardFillAll :: Board -> [Cell] -> Board
 boardFillAll = foldl boardFill
 
+boardClearLines :: Board -> Board
+-- ^Clear all of the full lines on the board
+boardClearLines (Board w h brd) = Board w h (clear h brd)
+	where
+		clear n b 
+			| n < 0 = b
+			| otherwise = clear (n - 1) (if b .&. mask n == mask n then b `xor` mask n else b)
+		baseMask = 2^w - 1
+		mask n = baseMask * 2^(n * w)
+
+
 data State = State {
         stateUnit :: Unit,
         board :: Board,

@@ -3,11 +3,10 @@ import Parsing
 import LoadConfig
 import Moves
 import Game
-import Data.Char (toLower)
 
 main :: IO ()
 main = do
-        c <- parseFile "qualifiers/problem_3.json"
+        c <- parseFile "qualifiers/problem_0.json"
         let (s : ss) = configToStates c
         mainLoop s
     where
@@ -22,6 +21,6 @@ main = do
 nextMove :: IO Move
 nextMove = do
                 c <- getChar
-                case charToMove (toLower c) of
+                case charToMove c of
                         Nothing -> nextMove
                         Just m -> return m
