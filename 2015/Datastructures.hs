@@ -9,7 +9,7 @@ import Data.Bits
 data Cell = Cell {
         cellX :: Int,
         cellY :: Int
-        } deriving (Show)
+        } deriving (Show, Eq)
 
 data Unit = Unit {
         unitMembers :: [Cell],
@@ -65,3 +65,18 @@ showGrid w h sh = concatMap line [0..h-1] ++ if h `mod` 2 == 0 then oddDiags els
 
 instance Show Board where
         show b = showGrid (boardWidth b) (boardHeight b) (showBoardCell b)
+
+instance Show State where
+        show st = showGrid (boardWidth b) (boardHeight b) showCell
+                where
+                        b = board st
+                        u = stateUnit st
+                        showCell c = case (elem c (unitMembers u), c == unitPivot u, boardLookup b c) of
+                                (True, _, True) -> "###"
+                                (False, False, False) -> "   "
+                                (False, False, True) -> "XXX"
+                                (False, True, False) -> " . "
+                                (False, True, True) -> "X.X"
+                                (True, False, False) -> "OOO"
+                                (True, True, False) -> "O.O"
+
