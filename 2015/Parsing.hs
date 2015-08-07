@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+module Parsing where
 
 import Datastructures
 import Data.Aeson
@@ -30,6 +31,15 @@ instance FromJSON Configuration where
                   <*> v .: "sourceSeeds"
  parseJSON _ = mzero
 
+
+parseFile :: FilePath -> IO Configuration
+parseFile file = do
+        d <- (eitherDecode <$> B.readFile file) :: IO (Either String Configuration)
+        case d of
+                Left err -> error err
+                Right ps -> return ps
+
+{- 
 jsonFile :: FilePath
 jsonFile = "qualifiers/problem_0.json"
 
@@ -42,3 +52,4 @@ main = do
   case d of
     Left err -> putStrLn err
     Right ps -> print ps
+-}
