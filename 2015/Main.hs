@@ -4,6 +4,7 @@ import LoadConfig
 import Moves
 import Game
 import Entropy
+import CommandSequence
 import System.Environment
 import Data.List
 
