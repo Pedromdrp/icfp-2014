@@ -13,3 +13,5 @@ getSymmetryAngles u = getSymmetryAnglesAux u [1, 2, 3]
   where getSymmetryAnglesAux un [] = 6
         getSymmetryAnglesAux un (x:xs) = if (equalUnit u un2) then x else (getSymmetryAnglesAux un2 xs)
           where un2 = rotateACWUnit un
+
+
