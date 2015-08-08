@@ -3,6 +3,7 @@ import Parsing
 import LoadConfig
 import Moves
 import Game
+import Entropy
 import System.Environment
 import Data.List
 
@@ -36,6 +37,7 @@ main = do
     where
         mainLoop s = do
                 print s
+		print $ entropy1 $ board s
                 m <- nextMove
                 print m
                 case (doMove m s) of

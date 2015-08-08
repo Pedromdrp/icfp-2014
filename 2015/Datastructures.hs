@@ -36,7 +36,19 @@ emptyBoard :: Int -> Int -> Board
 emptyBoard width height = Board width height 0
 
 boardLookup :: Board -> Cell -> Bool
+{-# INLINE boardLookup #-}
 boardLookup (Board w _ bs) c = testBit bs ((cellX c) + (cellY c) * w)
+
+boardLookupBounds :: Board -> Cell -> Bool
+-- ^Lookup, but allow locations that are out of bounds.
+-- Locations off the top are considered empty; off other edges they are full
+{-# INLINE boardLookupBounds #-}
+boardLookupBounds b@(Board w h bs) c@(Cell x y)
+	| y < 0 = False
+	| y >= h = True
+	| x < 0 = True
+	| x > w = True
+	| otherwise = boardLookup b c
 
 boardFill :: Board -> Cell -> Board
 boardFill (Board w h bs) c = Board w h $ setBit bs ((cellX c) + (cellY c) * w)
