@@ -8,8 +8,7 @@ import AI
 configToStates :: Configuration -> [State]
 configToStates cfg = do
                 seed <- configSourceSeeds cfg
-                let (u : us) = genUnits (configSourceLength cfg) seed
-                return $ State u brd us []
+		return $ makeState brd $ genUnits (configSourceLength cfg) seed
         where
                 numUnits = length (configUnits cfg)
                 cunits = map (centerUnit w) (configUnits cfg)

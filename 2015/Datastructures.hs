@@ -44,18 +44,19 @@ boardFill (Board w h bs) c = Board w h $ setBit bs ((cellX c) + (cellY c) * w)
 boardFillAll :: Board -> [Cell] -> Board
 boardFillAll = foldl boardFill
 
-boardClearLines :: Board -> Board
+boardClearLines :: Board -> (Board, Int)
 -- ^Clear all of the full lines on the board.
 -- Move higher lines down
-boardClearLines (Board w h brd) = Board w h (clear h brd)
+-- Also returns the number of lines cleared
+boardClearLines (Board w h brd) = (Board w h b', ls)
 	where
-		clear n b 
-			| n < 0 = b
+		(b', ls) = clear h brd 0
+		clear n b acc
+			| n < 0 = (b, acc)
 			| b .&. mask n == mask n = clear n
 				((b .&. (complement $ 2^((n+1)*w) - 1)) .|.
-				(shiftL (b .&. (2^(n*w)-1)) w))
-			| otherwise = clear (n - 1) b
-			| otherwise = clear (n - 1) (if b .&. mask n == mask n then b `xor` mask n else b)
+				(shiftL (b .&. (2^(n*w)-1)) w)) (acc + 1)
+			| otherwise = clear (n - 1) b acc
 		baseMask = 2^w - 1
 		mask n = baseMask * 2^(n * w)
 
@@ -77,10 +78,16 @@ data State = State {
         stateGUnit :: GUnit,
         board :: Board,
         source :: [GUnit],
-	history :: [OldPos] -- the positions that the current unit has been in on the current row
+	history :: [OldPos], -- the positions that the current unit has been in on the current row
+	currentScore :: Int,
+	lsOld :: Int
         }
 stateUnit :: State -> Unit
 stateUnit = gUnit . stateGUnit
+
+makeState :: Board -> [GUnit] -> State
+makeState b (u:us) = State u b us [] 0 0
+makeState _ [] = error "makeState with empty source!"
 
 showBoardCell :: Board -> Cell -> String
 showBoardCell b c = if boardLookup b c then "XXX" else "   "

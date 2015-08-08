@@ -20,7 +20,7 @@ isDownMove (Move SE) = True
 isDownMove _ = False
 
 
-data GameOver = EmptySource | InvalidSpawn | Revisit deriving (Eq,Ord,Show)
+data GameOver = EmptySource Int | InvalidSpawn Int | Revisit deriving (Eq,Ord,Show)
 
 doMove :: Move -> State -> Either GameOver State
 -- ^Update the state according to a move
@@ -32,18 +32,24 @@ doMove :: Move -> State -> Either GameOver State
 --      if no such unit or invalid state on spawning then return nothing
 doMove mv st = if isValidState st' then 
 		if isRevisit then Left Revisit else Right st' else
-		if null (source st) then Left EmptySource else
-		if isValidState st'' then Right st'' else Left InvalidSpawn
+		if null (source st) then Left (EmptySource newScore) else
+		if isValidState st'' then Right st'' else Left (InvalidSpawn newScore)
         where
 		history' = if isDownMove mv then [] else (gUnitPos (stateGUnit st) : history st)
                 st' = st {stateGUnit = moveUnit mv (stateGUnit st), history = history'}
 		isRevisit = elem (gUnitPos (stateGUnit st')) history'
                 (unit' : source') = source st
+		(board'', ls) = boardClearLines (boardFillAll (board st) (unitMembers (stateUnit st)))
+		points = (length $ unitMembers $ stateUnit st) + 50 * (1 + ls) * ls
+		lineBonus = if lsOld st > 1 then ((lsOld st - 1) * points) `div` 10 else 0
+		newScore = currentScore st + points + lineBonus
                 st'' = st {
                         stateGUnit = unit',
-                        board = boardClearLines (boardFillAll (board st) (unitMembers (stateUnit st))),
+                        board = board'',
                         source = source',
-			history = []
+			history = [],
+			currentScore = newScore,
+			lsOld = ls
                         }
                 
 
