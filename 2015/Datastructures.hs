@@ -45,11 +45,16 @@ boardFillAll :: Board -> [Cell] -> Board
 boardFillAll = foldl boardFill
 
 boardClearLines :: Board -> Board
--- ^Clear all of the full lines on the board
+-- ^Clear all of the full lines on the board.
+-- Move higher lines down
 boardClearLines (Board w h brd) = Board w h (clear h brd)
 	where
 		clear n b 
 			| n < 0 = b
+			| b .&. mask n == mask n = clear n
+				((b .&. (complement $ 2^((n+1)*w) - 1)) .|.
+				(shiftL (b .&. (2^(n*w)-1)) w))
+			| otherwise = clear (n - 1) b
 			| otherwise = clear (n - 1) (if b .&. mask n == mask n then b `xor` mask n else b)
 		baseMask = 2^w - 1
 		mask n = baseMask * 2^(n * w)
