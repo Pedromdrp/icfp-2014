@@ -15,8 +15,8 @@ main = do
                 m <- nextMove
                 print m
                 case (doMove m s) of
-                        Nothing -> return ()
-                        Just s' -> mainLoop s'
+                        Left e -> print e
+                        Right s' -> mainLoop s'
 
 nextMove :: IO Move
 nextMove = do

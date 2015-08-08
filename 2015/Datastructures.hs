@@ -59,12 +59,28 @@ boardClearLines (Board w h brd) = Board w h (clear h brd)
 		baseMask = 2^w - 1
 		mask n = baseMask * 2^(n * w)
 
+data GUnit = GUnit {
+	gUnit :: Unit,
+	guSymmetryAngle :: Int,
+	guOrientation :: Int -- always in [0..guSymmetryAngle-1]
+	}
+
+data OldPos = OldPos {
+	opColumn :: Int,
+	opOrientation :: Int
+	} deriving (Eq, Ord)
+
+gUnitPos :: GUnit -> OldPos
+gUnitPos gu = OldPos ((cellX . unitPivot . gUnit) gu) (guOrientation gu)
 
 data State = State {
-        stateUnit :: Unit,
+        stateGUnit :: GUnit,
         board :: Board,
-        source :: [Unit]
+        source :: [GUnit],
+	history :: [OldPos] -- the positions that the current unit has been in on the current row
         }
+stateUnit :: State -> Unit
+stateUnit = gUnit . stateGUnit
 
 showBoardCell :: Board -> Cell -> String
 showBoardCell b c = if boardLookup b c then "XXX" else "   "
