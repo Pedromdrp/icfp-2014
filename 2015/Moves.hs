@@ -43,10 +43,10 @@ rotateACWUnit :: Unit -> Unit
 rotateACWUnit u@(Unit _ (Cell x y)) = addUnit (Unit (map (toCell . rotateACWCube . toCube) (unitMembers newUnit)) (unitPivot newUnit)) x y
   where newUnit = addUnit u (-x) (-y)
 
-moveUnit :: Move -> Unit -> Unit
-moveUnit (Move E) u = addUnit u 1 0
-moveUnit (Move W) u = addUnit u (-1) 0
-moveUnit (Move SE) u = addUnit u 0 1
-moveUnit (Move SW) u = addUnit u (-1) 1
-moveUnit (Rotate CW) u = rotateCWUnit u
-moveUnit (Rotate CCW) u = rotateACWUnit u
+moveUnit :: Move -> GUnit -> GUnit
+moveUnit (Move E) gu = gu {gUnit = addUnit (gUnit gu) 1 0}
+moveUnit (Move W) gu = gu {gUnit = addUnit (gUnit gu) (-1) 0}
+moveUnit (Move SE) gu = gu {gUnit = addUnit (gUnit gu) 0 1}
+moveUnit (Move SW) gu = gu {gUnit = addUnit (gUnit gu) (-1) 1}
+moveUnit (Rotate CW) gu = gu {gUnit = rotateCWUnit (gUnit gu), guOrientation = (guOrientation gu + 1) `mod` guSymmetryAngle gu}
+moveUnit (Rotate CCW) gu = gu {gUnit = rotateACWUnit (gUnit gu), guOrientation = (guOrientation gu + 5) `mod` guSymmetryAngle gu}

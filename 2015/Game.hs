@@ -14,7 +14,15 @@ isValidState st = all isValidCell (unitMembers (stateUnit st))
                 isValidCell c@(Cell x y) = x >= 0 && x < w && y >= 0 && y < h
                         && not (boardLookup (board st) c)
 
-doMove :: Move -> State -> Maybe State
+isDownMove :: Move -> Bool
+isDownMove (Move SW) = True
+isDownMove (Move SE) = True
+isDownMove _ = False
+
+
+data GameOver = EmptySource | InvalidSpawn | Revisit deriving (Eq,Ord,Show)
+
+doMove :: Move -> State -> Either GameOver State
 -- ^Update the state according to a move
 -- Try the move
 --   if it's valid, do it
@@ -22,15 +30,20 @@ doMove :: Move -> State -> Maybe State
 --      try to eliminate lines
 --      spawn the next unit (if available)
 --      if no such unit or invalid state on spawning then return nothing
-doMove mv st = if isValidState st' then Just st' else
-                if not (null (source st)) && isValidState st'' then Just st'' else Nothing
+doMove mv st = if isValidState st' then 
+		if isRevisit then Left Revisit else Right st' else
+		if null (source st) then Left EmptySource else
+		if isValidState st'' then Right st'' else Left InvalidSpawn
         where
-                st' = st {stateUnit = moveUnit mv (stateUnit st)}
+		history' = if isDownMove mv then [] else (gUnitPos (stateGUnit st) : history st)
+                st' = st {stateGUnit = moveUnit mv (stateGUnit st), history = history'}
+		isRevisit = elem (gUnitPos (stateGUnit st')) history'
                 (unit' : source') = source st
                 st'' = st {
-                        stateUnit = unit',
+                        stateGUnit = unit',
                         board = boardClearLines (boardFillAll (board st) (unitMembers (stateUnit st))),
-                        source = source'
+                        source = source',
+			history = []
                         }
                 
 
