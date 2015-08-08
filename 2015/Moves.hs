@@ -43,6 +43,9 @@ rotateACWUnit :: Unit -> Unit
 rotateACWUnit u@(Unit _ (Cell x y)) = addUnit (Unit (map (toCell . rotateACWCube . toCube) (unitMembers newUnit)) (unitPivot newUnit)) x y
   where newUnit = addUnit u (-x) (-y)
 
+getMoves :: [Move]
+getMoves = [Move E, Move W, Move SE, Move SW, Rotate CW, Rotate CCW]
+
 moveUnit :: Move -> GUnit -> GUnit
 moveUnit (Move E) gu = gu {gUnit = addUnit (gUnit gu) 1 0}
 moveUnit (Move W) gu = gu {gUnit = addUnit (gUnit gu) (-1) 0}

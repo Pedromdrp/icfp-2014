@@ -1,6 +1,7 @@
 module AI where
 import Datastructures
 import Moves
+import Entropy
 import Data.List
 
 -- ^Tests if two units with the same pivot are equivalent
@@ -14,4 +15,29 @@ getSymmetryAngles u = getSymmetryAnglesAux u [1, 2, 3]
         getSymmetryAnglesAux un (x:xs) = if (equalUnit u un2) then x else (getSymmetryAnglesAux un2 xs)
           where un2 = rotateACWUnit un
 
+{--
+dfs :: State -> [Move] -> (Int, [Move])
+dfs st mv =
+  do succ <- map (\m -> (doMove m st, mv ++ [m])) getMoves
+     
 
+Bah I am stopping now
+getUnitMoves :: Either State -> [Move]
+getUnitMoves st =
+  do succ <- map (\m -> (doMove m st, [m])) getMoves
+     
+     (entropy1 (board s))
+  where helper s m = maximum ()
+  do successors <- foldl (\(x, y) xs -> case x of
+                                           Left e -> xs
+                                           Right s -> (s, y))
+                         []
+                         
+     return if null successors
+              then (0, mv)
+              else maximum $ map successors
+
+case (doMove m s) of
+                        Left e -> print e
+                        Right s' -> mainLoop s'
+--}
