@@ -50,6 +50,18 @@ boardLookupBounds b@(Board w h bs) c@(Cell x y)
 	| x > w = True
 	| otherwise = boardLookup b c
 
+boardLookupBounds2 :: Board -> Cell -> Bool
+-- ^Lookup, but allow locations that are out of bounds.
+-- Locations off the top are considered empty; off other edges they are full
+{-# INLINE boardLookupBounds2 #-}
+boardLookupBounds2 b@(Board w h bs) c@(Cell x y)
+	| y < 0 = True
+	| y >= h = True
+	| x < 0 = True
+	| x > w = True
+	| otherwise = boardLookup b c
+
+
 boardFill :: Board -> Cell -> Board
 boardFill (Board w h bs) c = Board w h $ setBit bs ((cellX c) + (cellY c) * w)
 

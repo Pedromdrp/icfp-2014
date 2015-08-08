@@ -1,5 +1,7 @@
 module Entropy(
-	entropy1
+	entropy1,
+	entropy2,
+	entropy3
 	) where
 
 import Datastructures
@@ -40,4 +42,28 @@ entropy1 brd = sum (map entropyLine [0..boardHeight brd])
 			+ (if boardLookupBounds brd (se c) then 1 else 0)
 			+ (if boardLookupBounds brd (ne c) then 8 else 0)
 			+ (if boardLookupBounds brd (nw c) then 8 else 0)
-			
+
+entropy2 :: Board -> Int
+entropy2 brd = sum (map entropyLine [0..boardHeight brd])
+	where
+		entropyLine l = (boardHeight brd - l) * sum [entropyHex x l | x <- [0..boardWidth brd - 1]]
+		entropyHex x y = let c = Cell x y in if boardLookup brd c then 5 else
+			(if boardLookupBounds brd (w c) then 3 else 1)
+			* (if boardLookupBounds brd (e c) then 3 else 1)
+			* (if boardLookupBounds brd (sw c) then 2 else 1)
+			* (if boardLookupBounds brd (se c) then 2 else 1)
+			* (if boardLookupBounds brd (ne c) then 5 else 1)
+			* (if boardLookupBounds brd (nw c) then 5 else 1)
+
+entropy3 :: Board -> Int
+entropy3 brd = sum (map entropyLine [0..boardHeight brd])
+	where
+		entropyLine l = (boardHeight brd - l) * sum [entropyHex x l | x <- [0..boardWidth brd - 1]]
+		entropyHex x y = let c = Cell x y in if boardLookup brd c then 5 else
+			(if boardLookupBounds2 brd (w c) then 3 else 1)
+			* (if boardLookupBounds2 brd (e c) then 3 else 1)
+			* (if boardLookupBounds2 brd (sw c) then 2 else 1)
+			* (if boardLookupBounds2 brd (se c) then 2 else 1)
+			* (if boardLookupBounds2 brd (ne c) then 5 else 1)
+			* (if boardLookupBounds2 brd (nw c) then 5 else 1)
+
