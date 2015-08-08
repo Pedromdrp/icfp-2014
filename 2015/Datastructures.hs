@@ -9,7 +9,7 @@ import Data.Bits
 data Cell = Cell {
         cellX :: Int,
         cellY :: Int
-        } deriving (Show, Eq)
+        } deriving (Show, Eq, Ord)
 
 data Unit = Unit {
         unitMembers :: [Cell],
