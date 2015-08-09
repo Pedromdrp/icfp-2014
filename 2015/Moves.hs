@@ -28,6 +28,10 @@ rotateACWCube (Cube x y z) = Cube (-y) (-z) (-x)
 addCube :: Cube -> Int -> Int -> Int -> Cube
 addCube (Cube x y z) xx yy zz = Cube (x + xx) (y + yy) (z + zz)
 
+mirrorCell :: Cell -> Cell
+mirrorCell (Cell x y) = toCell (Cube (- xx) (- yy) (- zz))
+  where (Cube xx yy zz) = toCube (Cell x y)
+
 addCell :: Cell -> Int -> Int -> Cell
 addCell c xx yy = toCell (addCube (toCube c) (cubeX aux) (cubeY aux) (cubeZ aux))
   where aux = toCube (Cell xx yy)
@@ -37,11 +41,13 @@ addUnit (Unit cells pivot) x y = Unit (map (\c -> addCell c x y) cells) (addCell
 
 rotateCWUnit :: Unit -> Unit
 rotateCWUnit u@(Unit _ (Cell x y)) = addUnit (Unit (map (toCell . rotateCWCube . toCube) (unitMembers newUnit)) (unitPivot newUnit)) x y
-  where newUnit = addUnit u (-x) (-y)
+  where newUnit = addUnit u xx yy
+        (Cell xx yy) = mirrorCell (Cell x y)
 
 rotateACWUnit :: Unit -> Unit
 rotateACWUnit u@(Unit _ (Cell x y)) = addUnit (Unit (map (toCell . rotateACWCube . toCube) (unitMembers newUnit)) (unitPivot newUnit)) x y
-  where newUnit = addUnit u (-x) (-y)
+  where newUnit = addUnit u xx yy
+        (Cell xx yy) = mirrorCell (Cell x y)
 
 getMoves :: [Move]
 getMoves = [Move E, Move W, Move SE, Move SW, Rotate CW, Rotate CCW]
