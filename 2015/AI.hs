@@ -1,4 +1,4 @@
-module AI where
+module AI(equalUnit, getSymmetryAngles, dfs) where
 import Datastructures
 import Moves
 import Game
@@ -16,8 +16,9 @@ getSymmetryAngles u = getSymmetryAnglesAux u [1, 2, 3]
         getSymmetryAnglesAux un (x:xs) = if (equalUnit u un2) then x else (getSymmetryAnglesAux un2 xs)
           where un2 = rotateACWUnit un
 
-dfs :: State -> [Move] -> Int -> (Int, State, [Move])
-dfs st mv score =
+
+dfsAux :: State -> [Move] -> Int -> (Int, State, [Move])
+dfsAux st mv score =
   if newScore > score
     then (entropy1 (board st), st, mv)
     else minimum opt
@@ -26,5 +27,8 @@ dfs st mv score =
         next = filter (\(s, m) -> case s of
                                     Left _ -> False
                                     Right _ -> True) succ
-        opt = map (\(s, m) -> dfs s (mv ++ [m]) score) (map (\(s, m) -> case s of
+        opt = map (\(s, m) -> dfsAux s (mv ++ [m]) score) (map (\(s, m) -> case s of
                                                                           Right s' -> (s', m)) next)
+
+dfs :: State -> (Int, State, [Move])
+dfs st = dfsAux st [] (currentScore st)
