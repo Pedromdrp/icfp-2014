@@ -8,6 +8,7 @@ import Data.Maybe
 import Data.Bits
 import GHC.Exts
 import Debug.Trace
+import Control.Exception.Base
 
 generateBaseTargets :: Int -> Int -> GUnit -> [Transform]
 -- Generate the possible locations on an empty board for the target
@@ -25,19 +26,22 @@ generateBaseTargets w h gu0 = do
 		    else
 		    	w - 1 - maximum (map (cellX . mse) gum) - (se `div` 2)
 		e <- [minE..maxE]
-		return $ Transform e se cw
+		return $ let t = Transform e se cw in assert (checkTransform t) t
 	where
 		rotations n gur
 			| n < guSymmetryAngle gu0 = (gur,n) : rotations (n+1) (moveUnit (Rotate CW) gur)
 			| otherwise = []
 		mse (Cell x y) = if y `mod` 2 == 0 then Cell x (y+1) else Cell (x+1) (y+1)
+		checkTransform t = let tgu = transformUnit t tgu in all isValidCell (unitMembers (gUnit tgu))
+                isValidCell c@(Cell x y) = x >= 0 && x < w && y >= 0 && y < h
+
 
 checkValidEntropy :: State -> Transform -> Maybe (Transform, GUnit, Int)
 -- Checks if the transform would intersect existing cells
 -- Does not check for out of bounds
 -- Returns Nothing if position is invalid
 -- Otherwise returns Just (t, transformed unit, entropy)
-checkValidEntropy s t = if isValid then Just (t, tunit, entropy (brd { boardBits = (boardBits brd) .|. bpiece })) else Nothing
+checkValidEntropy s t = if isValid then Just (t, tunit, (entropy . fst . boardClearLines) (brd { boardBits = (boardBits brd) .|. bpiece })) else Nothing
 	where
 		brd = board s
 		tunit = transformUnit t $ stateGUnit s
@@ -46,7 +50,7 @@ checkValidEntropy s t = if isValid then Just (t, tunit, entropy (brd { boardBits
 		isValid = (bpiece .&. (boardBits brd)) == 0
 
 validFiltered :: State -> [(Transform, GUnit, Int)]
-validFiltered s = mapMaybe (checkValidEntropy s) (generateBaseTargets w h gu)
+validFiltered s = mapMaybe (checkValidEntropy s) (let x = (generateBaseTargets w h gu) in {-trace (show x)-} x)
 	where
 		brd = board s
 		w = boardWidth brd
@@ -65,8 +69,7 @@ isLockable st gu0 = or db
 					_ -> [Rotate CW, Rotate CCW]
 			let gu' = moveUnit m gu0
 			c <- unitMembers (gUnit gu')
-			(if isInvalidCell c then trace (show c ++ " " ++ show m) else id) $
-				return $ isInvalidCell c
+			return $ isInvalidCell c
                 w = boardWidth (board st)
                 h = boardHeight (board st)
                 isInvalidCell c@(Cell x y) = x < 0 || x >= w || y < 0 || y >= h

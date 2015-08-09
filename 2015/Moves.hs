@@ -14,10 +14,10 @@ data Cube = Cube {
 
 toCube :: Cell -> Cube
 toCube (Cell x y) = Cube newX (- newX - y) y 
-  where newX = x - (quot (y - (rem y 2)) 2)
+  where newX = x - (div (y - (mod y 2)) 2)
 
 toCell :: Cube -> Cell
-toCell (Cube x y z) = Cell (x + (quot (z - (rem z 2)) 2)) z
+toCell (Cube x y z) = Cell (x + (div (z - (mod z 2)) 2)) z
 
 rotateCWCube :: Cube -> Cube
 rotateCWCube (Cube x y z) = Cube (-z) (-x) (-y)
