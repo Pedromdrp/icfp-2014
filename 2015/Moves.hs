@@ -1,4 +1,4 @@
-module Moves (addUnit, rotateCWUnit, rotateACWUnit, Direction(..), Rotation(..), Move(..), moveUnit) where
+module Moves (addUnit, rotateCWUnit, rotateACWUnit, Direction(..), Rotation(..), Move(..), moveUnit, getMoves) where
 
 import Datastructures
 

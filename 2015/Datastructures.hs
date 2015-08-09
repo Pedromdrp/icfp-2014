@@ -14,7 +14,7 @@ data Cell = Cell {
 data Unit = Unit {
         unitMembers :: [Cell],
         unitPivot :: Cell
-        } deriving (Show, Generic)
+        } deriving (Show, Generic, Eq, Ord)
 
 data Configuration = Configuration {
         configID :: Int,
@@ -30,7 +30,7 @@ data Board = Board {
         boardWidth :: Int,
         boardHeight :: Int,
         boardBits :: Integer
-        }
+        } deriving (Eq, Ord)
 
 emptyBoard :: Int -> Int -> Board
 emptyBoard width height = Board width height 0
@@ -88,7 +88,7 @@ data GUnit = GUnit {
 	gUnit :: Unit,
 	guSymmetryAngle :: Int,
 	guOrientation :: Int -- always in [0..guSymmetryAngle-1]
-	}
+	} deriving (Eq, Ord)
 
 data OldPos = OldPos {
 	opColumn :: Int,
@@ -99,13 +99,13 @@ gUnitPos :: GUnit -> OldPos
 gUnitPos gu = OldPos ((cellX . unitPivot . gUnit) gu) (guOrientation gu)
 
 data State = State {
-        stateGUnit :: GUnit,
-        board :: Board,
-        source :: [GUnit],
+	stateGUnit :: GUnit,
+	board :: Board,
+	source :: [GUnit],
 	history :: [OldPos], -- the positions that the current unit has been in on the current row
 	currentScore :: Int,
 	lsOld :: Int
-        }
+        } deriving (Eq, Ord)
 stateUnit :: State -> Unit
 stateUnit = gUnit . stateGUnit
 
