@@ -16,7 +16,7 @@ generateBaseTargets :: Int -> Int -> GUnit -> [Transform]
 generateBaseTargets w h gu0 = do
 		(gu',cw) <- rotations 0 gu0
 		let gum = unitMembers $ gUnit gu'
-		se <- [0..h - 1 - maximum (map cellY gum)]
+		se <- [(- minimum (map cellY gum))..h - 1 - maximum (map cellY gum)]
 		let minE = if se `mod` 2 == 0 then
 			0 - minimum (map cellX gum) - (se `div` 2)
 		    else
@@ -26,13 +26,14 @@ generateBaseTargets w h gu0 = do
 		    else
 		    	w - 1 - maximum (map (cellX . mse) gum) - (se `div` 2)
 		e <- [minE..maxE]
-		return $ let t = Transform e se cw in assert (checkTransform t) t
+		-- return $ let t = Transform e se cw in (if not $ checkTransform t then trace (show t ++ " " ++ show (unitPivot (gUnit gu0)) ++ " " ++ show (unitPivot (gUnit (transformUnit t gu0)))) else id) assert (checkTransform t) t
+		return $ Transform e se cw
 	where
 		rotations n gur
 			| n < guSymmetryAngle gu0 = (gur,n) : rotations (n+1) (moveUnit (Rotate CW) gur)
 			| otherwise = []
 		mse (Cell x y) = if y `mod` 2 == 0 then Cell x (y+1) else Cell (x+1) (y+1)
-		checkTransform t = let tgu = transformUnit t tgu in all isValidCell (unitMembers (gUnit tgu))
+		checkTransform t = let tgu = transformUnit t gu0 in all isValidCell (unitMembers (gUnit tgu))
                 isValidCell c@(Cell x y) = x >= 0 && x < w && y >= 0 && y < h
 
 

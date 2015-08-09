@@ -69,7 +69,7 @@ data Transform = Transform {
 translateUnit :: Int -> Int -> Unit -> Unit
 translateUnit e se (Unit cells pivot) = Unit (map tc cells) (tc pivot)
 	where
-		tc (Cell x y) = Cell (x + e + (se `div` 2)) (y + se)
+		tc (Cell x y) = Cell (x + e + ((se + mod y 2) `div` 2)) (y + se)
 
 transformUnit :: Transform -> GUnit -> GUnit
 transformUnit (Transform e se cw) gu =
