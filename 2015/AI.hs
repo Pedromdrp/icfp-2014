@@ -20,7 +20,7 @@ dfs :: State -> [Move] -> Int -> (Int, State, [Move])
 dfs st mv score =
   if newScore > score
     then (entropy1 (board st), st, mv)
-    else maximum opt
+    else minimum opt
   where newScore = currentScore st
         succ = map (\m -> (doMove m st, m)) getMoves
         next = filter (\(s, m) -> case s of
