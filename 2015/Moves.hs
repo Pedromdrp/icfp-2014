@@ -58,7 +58,7 @@ data Transform = Transform {
 	transformE :: Int,
 	transformSE :: Int,
 	transformCW :: Int
-	} deriving (Show)
+	} deriving (Show, Ord, Eq)
 
 translateUnit :: Int -> Int -> Unit -> Unit
 translateUnit e se (Unit cells pivot) = Unit (map tc cells) (tc pivot)

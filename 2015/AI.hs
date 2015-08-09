@@ -4,6 +4,8 @@ import Moves
 import Game
 import Entropy
 import Data.List
+import Data.Graph.AStar
+import qualified Data.Set as Set
 
 -- ^Tests if two units with the same pivot are equivalent
 equalUnit :: Unit -> Unit -> Bool
@@ -35,3 +37,19 @@ dfsAux st mv score =
 
 dfs :: State -> (Int, State, [Move])
 dfs st = dfsAux st [] (currentScore st)
+
+-- AStar functions
+
+neighbours :: (State, Transform) -> Set.Set (State, Transform)
+neighbours (st, t) = Set.empty
+
+--Move -> State -> Either GameOver State
+
+distanceNeighbours :: (Ord a, Num c) => a -> a -> c
+distanceNeighbours _ _ = 1
+
+heuristic :: (State, Transform) -> Int
+heuristic (st, t) = (abs (transformE t)) + (transformSE t) +  (transformCW t)
+
+isGoal :: (State, Transform) -> Bool
+isGoal (st, t) = (transformE t) == 0 && (transformSE t) == 0 && (transformCW t) == 0
