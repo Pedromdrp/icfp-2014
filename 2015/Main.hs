@@ -8,6 +8,7 @@ import CommandSequence
 import System.Environment
 import Data.List
 import AI
+import Targetting
 
 fileNames :: [String] -> [String]
 fileNames [] = []
@@ -39,15 +40,15 @@ main = do
     where
         mainLoop s = do
                 print s
-		print $ entropy1 $ board s
-		let (_, s', ms) = dfs s
-		print ms
-		mainLoop s'
-                {- m <- nextMove
+		print $ entropy $ board s
+		print $ head $ transforms1 s
+                m <- nextMove
                 print m
                 case (doMove m s) of
                         Left e -> print e
-                        Right s' -> mainLoop s' -}
+                        Right s' -> mainLoop s'
+
+
 
 nextMove :: IO Move
 nextMove = do

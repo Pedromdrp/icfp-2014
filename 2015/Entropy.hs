@@ -1,7 +1,8 @@
 module Entropy(
 	entropy1,
 	entropy2,
-	entropy3
+	entropy3,
+	entropy
 	) where
 
 import Datastructures
@@ -67,3 +68,5 @@ entropy3 brd = sum (map entropyLine [0..boardHeight brd])
 			* (if boardLookupBounds2 brd (ne c) then 5 else 1)
 			* (if boardLookupBounds2 brd (nw c) then 5 else 1)
 
+entropy :: Board -> Int
+entropy = entropy1

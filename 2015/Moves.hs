@@ -1,4 +1,4 @@
-module Moves (addUnit, rotateCWUnit, rotateACWUnit, Direction(..), Rotation(..), Move(..), moveUnit, getMoves) where
+module Moves (addUnit, rotateCWUnit, rotateACWUnit, Direction(..), Rotation(..), Move(..), moveUnit, getMoves, Transform(..), transformUnit) where
 
 import Datastructures
 
@@ -53,3 +53,18 @@ moveUnit (Move SE) gu = gu {gUnit = addUnit (gUnit gu) 0 1}
 moveUnit (Move SW) gu = gu {gUnit = addUnit (gUnit gu) (-1) 1}
 moveUnit (Rotate CW) gu = gu {gUnit = rotateCWUnit (gUnit gu), guOrientation = (guOrientation gu + 1) `mod` guSymmetryAngle gu}
 moveUnit (Rotate CCW) gu = gu {gUnit = rotateACWUnit (gUnit gu), guOrientation = (guOrientation gu + 5) `mod` guSymmetryAngle gu}
+
+data Transform = Transform {
+	transformE :: Int,
+	transformSE :: Int,
+	transformCW :: Int
+	} deriving (Show)
+
+transformUnit :: Transform -> GUnit -> GUnit
+transformUnit (Transform e se cw) gu =
+		gu {
+			gUnit = (ntimes cw rotateCWUnit) (addUnit (gUnit gu) e se),
+			guOrientation = (guOrientation gu + cw) `mod` guSymmetryAngle gu
+		}
+	where
+    		ntimes n f x = iterate f x !! n
