@@ -60,10 +60,15 @@ data Transform = Transform {
 	transformCW :: Int
 	} deriving (Show)
 
+translateUnit :: Int -> Int -> Unit -> Unit
+translateUnit e se (Unit cells pivot) = Unit (map tc cells) (tc pivot)
+	where
+		tc (Cell x y) = Cell (x + e + (se `div` 2)) (y + se)
+
 transformUnit :: Transform -> GUnit -> GUnit
 transformUnit (Transform e se cw) gu =
 		gu {
-			gUnit = (ntimes cw rotateCWUnit) (addUnit (gUnit gu) e se),
+			gUnit = (ntimes cw rotateCWUnit) (translateUnit e se (gUnit gu)),
 			guOrientation = (guOrientation gu + cw) `mod` guSymmetryAngle gu
 		}
 	where

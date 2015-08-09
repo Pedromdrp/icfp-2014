@@ -7,6 +7,7 @@ import Entropy
 import Data.Maybe
 import Data.Bits
 import GHC.Exts
+import Debug.Trace
 
 generateBaseTargets :: Int -> Int -> GUnit -> [Transform]
 -- Generate the possible locations on an empty board for the target
@@ -57,13 +58,18 @@ isLockable st gu0 = or db
 	where
 		db :: [Bool]
 		db = do
-			m <- getMoves
+			m <- [Move m | m <- [E, W, SE, SW]] ++ 
+				case guSymmetryAngle gu0 of
+					1 -> []
+					2 -> [Rotate CW]
+					_ -> [Rotate CW, Rotate CCW]
 			let gu' = moveUnit m gu0
 			c <- unitMembers (gUnit gu')
-			return $ isInvalidCell c
+			(if isInvalidCell c then trace (show c ++ " " ++ show m) else id) $
+				return $ isInvalidCell c
                 w = boardWidth (board st)
                 h = boardHeight (board st)
-                isInvalidCell c@(Cell x y) = x < 0 || x >= w || y < 0 && y >= h
+                isInvalidCell c@(Cell x y) = x < 0 || x >= w || y < 0 || y >= h
                         || (boardLookup (board st) c)
 	
 transforms1 :: State -> [Transform]
