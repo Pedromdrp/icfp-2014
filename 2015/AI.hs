@@ -40,16 +40,28 @@ dfs st = dfsAux st [] (currentScore st)
 
 -- AStar functions
 
-neighbours :: (State, Transform) -> Set.Set (State, Transform)
-neighbours (st, t) = Set.empty
+updateTransform :: Transform -> Move -> Transform
+updateTransform (Transform te se cw) (Move E) = Transform (te + 1) se cw
+updateTransform (Transform te se cw) (Move W) = Transform (te - 1) se cw
+updateTransform (Transform te se cw) (Move SE) = Transform te (se + 1) cw
+updateTransform (Transform te se cw) (Move SW) = Transform (te - 1) (se + 1) cw
+updateTransform (Transform te se cw) (Rotate CW) = Transform te se (cw + 1)
+updateTransform (Transform te se cw) (Rotate CCW) = Transform te se (mod (cw - 1) 6)
 
---Move -> State -> Either GameOver State
+neighbours :: (State, Transform, [Move]) -> Set.Set (State, Transform, [Move])
+neighbours (st, t, mv) =
+  Set.fromList $ map (\(s, m) -> case s of
+                                   Right s' -> (s', updateTransform t m, mv ++ [m])) next
+  where succ = map (\m -> (doMove m st, m)) getMoves
+        next = filter (\(s, m) -> case s of
+                                    Left _ -> False
+                                    Right _ -> True) succ
 
-distanceNeighbours :: (Ord a, Num c) => a -> a -> c
+distanceNeighbours :: (State, Transform, [Move]) -> (State, Transform, [Move]) -> Int
 distanceNeighbours _ _ = 1
 
-heuristic :: (State, Transform) -> Int
-heuristic (st, t) = (abs (transformE t)) + (transformSE t) +  (transformCW t)
+heuristic :: (State, Transform, [Move]) -> Int
+heuristic (st, t, mv) = (abs (transformE t)) + (transformSE t) +  (transformCW t)
 
-isGoal :: (State, Transform) -> Bool
-isGoal (st, t) = (transformE t) == 0 && (transformSE t) == 0 && (transformCW t) == 0
+isGoal :: (State, Transform, [Move]) -> Bool
+isGoal (st, t, mv) = (transformE t) == 0 && (transformSE t) == 0 && (transformCW t) == 0
