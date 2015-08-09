@@ -21,14 +21,17 @@ dfsAux :: State -> [Move] -> Int -> (Int, State, [Move])
 dfsAux st mv score =
   if newScore > score
     then (entropy1 (board st), st, mv)
-    else minimum opt
+    else case opt of
+           [] -> (2^29-1, st, mv)
+           xs -> minimum xs
   where newScore = currentScore st
         succ = map (\m -> (doMove m st, m)) getMoves
         next = filter (\(s, m) -> case s of
                                     Left _ -> False
                                     Right _ -> True) succ
-        opt = map (\(s, m) -> dfsAux s (mv ++ [m]) score) (map (\(s, m) -> case s of
-                                                                          Right s' -> (s', m)) next)
+        opt = map (\(s, m) -> dfsAux s (mv ++ [m]) score)
+                  (map (\(s, m) -> case s of
+                                     Right s' -> (s', m)) next)
 
 dfs :: State -> (Int, State, [Move])
 dfs st = dfsAux st [] (currentScore st)
