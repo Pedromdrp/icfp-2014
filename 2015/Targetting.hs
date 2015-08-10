@@ -9,6 +9,7 @@ import Data.Bits
 import GHC.Exts
 import Debug.Trace
 import Control.Exception.Base
+import Control.Monad
 
 interlock :: [[a]] -> [a]
 interlock [] = []
@@ -82,9 +83,29 @@ isLockable st gu0 = or db
                 h = boardHeight (board st)
                 isInvalidCell c@(Cell x y) = x < 0 || x >= w || y < 0 || y >= h
                         || (boardLookup (board st) c)
-	
+
+
+checkLockable :: State -> (Transform, GUnit, Int) -> Maybe (Transform, GUnit, Int, Move)
+checkLockable st (t0, gu0, sc0) = do
+                m <- (msum . map Just) $ [Move m | m <- [E, W, SE, SW]] ++ 
+				case guSymmetryAngle gu0 of
+					1 -> []
+					2 -> [Rotate CW]
+					_ -> [Rotate CW, Rotate CCW]
+                let gu' = moveUnit m gu0
+                if or (map isInvalidCell (unitMembers (gUnit gu'))) then
+                        return (t0, gu0, sc0, m) else mzero
+        where
+                w = boardWidth (board st)
+                h = boardHeight (board st)
+                isInvalidCell c@(Cell x y) = x < 0 || x >= w || y < 0 || y >= h
+                        || (boardLookup (board st) c)
+
 transforms1 :: State -> [Transform]
 transforms1 st = map (\(t, _, _) -> t) $ filter (\(_, u, _) -> isLockable st u) $ sortWith (\(_, _, e) -> e) $ validFiltered st
 
 transforms2 :: State -> [Transform]
 transforms2 st = map (\(t, _, _) -> t) $ sortWith (\(_, _, e) -> e) $ filter (\(_, u, _) -> isLockable st u) $ validFiltered st
+
+transforms3 :: State -> [(Transform, Move)]
+transforms3 st = map (\(t, _, _, m) -> (t,m)) $ sortWith (\(_, _, e, _) -> e) $ mapMaybe (checkLockable st) $ validFiltered st

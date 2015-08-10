@@ -9,6 +9,7 @@ import System.Environment
 import Data.List
 import AI
 import Targetting
+import Control.Monad
 
 fileNames :: [String] -> [String]
 fileNames [] = []
@@ -41,20 +42,21 @@ main = do
         mainLoop s = do
           print s
           print $ entropy $ board s
-          print $ head $ transforms1 s
-          moves <- do return $ findMove s (head (transforms1 s))
-          print $ moves
-          case moves of
-            Nothing -> do
+          let mm = do
+                (tgt,lm) <- (msum . map return) (transforms3 s)
+                ms <- findMove s tgt
+                return (ms ++ [lm])
+          print mm
+          case mm of
+                Nothing -> do
                          m <- nextMove
                          print m
                          case (doMove m s) of
                            Left e -> print e
                            Right s' -> mainLoop s'
-            Just xs -> do
-                           case (applyMoves xs s) of
-                             Left e -> print e
-                             Right s' -> mainLoop s'
+                Just moves -> case applyMoves moves s of
+                        Left e -> print e
+                        Right s' -> mainLoop s'
 
 
 applyMoves :: [Move] -> State -> Either GameOver State
