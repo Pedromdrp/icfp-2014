@@ -41,12 +41,12 @@ dfs st = dfsAux st [] (currentScore st)
 -- AStar functions
 
 updateTransform :: Transform -> Move -> Transform
-updateTransform (Transform te se cw) (Move E) = Transform (te + 1) se cw
-updateTransform (Transform te se cw) (Move W) = Transform (te - 1) se cw
-updateTransform (Transform te se cw) (Move SE) = Transform te (se + 1) cw
+updateTransform (Transform te se cw) (Move E) = Transform (te - 1) se cw
+updateTransform (Transform te se cw) (Move W) = Transform (te + 1) se cw
+updateTransform (Transform te se cw) (Move SE) = Transform te (se - 1) cw
 updateTransform (Transform te se cw) (Move SW) = Transform (te - 1) (se + 1) cw
-updateTransform (Transform te se cw) (Rotate CW) = Transform te se (mod (cw + 1) 6)
-updateTransform (Transform te se cw) (Rotate CCW) = Transform te se (mod (cw - 1) 6)
+updateTransform (Transform te se cw) (Rotate CW) = Transform te se (mod (cw - 1) 6)
+updateTransform (Transform te se cw) (Rotate CCW) = Transform te se (mod (cw + 1) 6)
 
 data SearchTuple = SearchTuple {
 	state :: State,
