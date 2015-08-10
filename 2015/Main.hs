@@ -52,10 +52,18 @@ main = do
                            Left e -> print e
                            Right s' -> mainLoop s'
             Just xs -> do
-                           case (doMove (head xs) s) of
+                           case (applyMoves xs s) of
                              Left e -> print e
                              Right s' -> mainLoop s'
 
+
+applyMoves :: [Move] -> State -> Either GameOver State
+applyMoves [] s = Right s
+applyMoves (x:xs) s =
+  case newState of
+    Left e -> newState
+    Right s' -> applyMoves xs s'
+  where newState = doMove x s
 
 nextMove :: IO Move
 nextMove = do
