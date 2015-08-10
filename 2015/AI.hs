@@ -45,30 +45,41 @@ updateTransform (Transform te se cw) (Move E) = Transform (te + 1) se cw
 updateTransform (Transform te se cw) (Move W) = Transform (te - 1) se cw
 updateTransform (Transform te se cw) (Move SE) = Transform te (se + 1) cw
 updateTransform (Transform te se cw) (Move SW) = Transform (te - 1) (se + 1) cw
-updateTransform (Transform te se cw) (Rotate CW) = Transform te se (cw + 1)
+updateTransform (Transform te se cw) (Rotate CW) = Transform te se (mod (cw + 1) 6)
 updateTransform (Transform te se cw) (Rotate CCW) = Transform te se (mod (cw - 1) 6)
 
-neighbours :: (State, Transform, [Move]) -> Set.Set (State, Transform, [Move])
-neighbours (st, t, mv) =
+data SearchTuple = SearchTuple {
+	state :: State,
+	transform :: Transform,
+	moves :: [Move]
+	}
+
+instance Eq SearchTuple where  
+    (SearchTuple _ t1 _) == (SearchTuple _ t2 _) = t1 == t2
+
+instance Ord SearchTuple where
+    compare (SearchTuple _ t1 _) (SearchTuple _ t2 _) = compare t1 t2
+
+neighbours :: SearchTuple -> Set.Set SearchTuple
+neighbours (SearchTuple st t mv) =
   Set.fromList $ map (\(s, m) -> case s of
-                                   Right s' -> (s', updateTransform t m, mv ++ [m])) next
+                                   Right s' -> (SearchTuple s' (updateTransform t m) (mv ++ [m]))) next
   where succ = map (\m -> (doMove m st, m)) getMoves
         next = filter (\(s, m) -> case s of
                                     Left _ -> False
-                                    Right _ -> True) succ
+                                    Right s' -> (currentScore s') == (currentScore st)) succ
 
-distanceNeighbours :: (State, Transform, [Move]) -> (State, Transform, [Move]) -> Int
+distanceNeighbours :: SearchTuple -> SearchTuple -> Int
 distanceNeighbours _ _ = 1
 
-heuristic :: (State, Transform, [Move]) -> Int
-heuristic (st, t, mv) = (abs (transformE t)) + (transformSE t) +  (transformCW t)
+heuristic :: SearchTuple -> Int
+heuristic (SearchTuple st t mv) = (abs (transformE t)) + (transformSE t) +  (transformCW t)
 
-isGoal :: (State, Transform, [Move]) -> Bool
-isGoal (st, t, mv) = (transformE t) == 0 && (transformSE t) == 0 && (transformCW t) == 0
+isGoal :: SearchTuple -> Bool
+isGoal (SearchTuple st t mv) = (transformE t) == 0 && (transformSE t) == 0 && (transformCW t) == 0
 
 findMove :: State -> Transform -> Maybe [Move]
-findMove st t = case moves of
+findMove st t = case res of
                   Nothing -> Nothing
-                  Just xs -> Just m
-                               where (s, t', m) = last xs 
-  where moves = aStar neighbours distanceNeighbours heuristic isGoal (st, t, [])
+                  Just xs -> Just (last (map (\x -> moves x) xs))
+  where res = aStar neighbours distanceNeighbours heuristic isGoal (SearchTuple st t [])
