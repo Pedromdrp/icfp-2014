@@ -42,6 +42,7 @@ main = do
                 print s
 		print $ entropy $ board s
 		print $ head $ transforms1 s
+		print $ findMove s (head (transforms1 s))
                 m <- nextMove
                 print m
                 case (doMove m s) of
