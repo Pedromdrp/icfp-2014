@@ -39,16 +39,22 @@ main = do
         mainLoop s
     where
         mainLoop s = do
-                print s
-		print $ entropy $ board s
-		print $ head $ transforms1 s
-		print $ findMove s (head (transforms1 s))
-                m <- nextMove
-                print m
-                case (doMove m s) of
-                        Left e -> print e
-                        Right s' -> mainLoop s'
-
+          print s
+          print $ entropy $ board s
+          print $ head $ transforms1 s
+          moves <- do return $ findMove s (head (transforms1 s))
+          print $ moves
+          case moves of
+            Nothing -> do
+                         m <- nextMove
+                         print m
+                         case (doMove m s) of
+                           Left e -> print e
+                           Right s' -> mainLoop s'
+            Just xs -> do
+                           case (doMove (head xs) s) of
+                             Left e -> print e
+                             Right s' -> mainLoop s'
 
 
 nextMove :: IO Move
