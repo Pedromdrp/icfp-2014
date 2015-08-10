@@ -10,24 +10,16 @@ import GHC.Exts
 import Debug.Trace
 import Control.Exception.Base
 
+interlock :: [[a]] -> [a]
+interlock [] = []
+interlock [x] = x
+interlock ([]:xs) = interlock xs
+interlock ((a:as):xs) = a : (interlock (xs ++ [as]))
+
 generateBaseTargets :: Int -> Int -> GUnit -> [Transform]
 -- Generate the possible locations on an empty board for the target
 -- Assumes that the unit is already at the top of the board
-generateBaseTargets w h gu0 = do
-		(gu',cw) <- rotations 0 gu0
-		let gum = unitMembers $ gUnit gu'
-		se <- [(- minimum (map cellY gum))..h - 1 - maximum (map cellY gum)]
-		let minE = if se `mod` 2 == 0 then
-			0 - minimum (map cellX gum) - (se `div` 2)
-		    else
-		    	0 - minimum (map (cellX . mse) gum) - (se `div` 2)
-		let maxE = if se `mod` 2 == 0 then
-			w - 1 - maximum (map cellX gum) - (se `div` 2)
-		    else
-		    	w - 1 - maximum (map (cellX . mse) gum) - (se `div` 2)
-		e <- [minE..maxE]
-		-- return $ let t = Transform e se cw in (if not $ checkTransform t then trace (show t ++ " " ++ show (unitPivot (gUnit gu0)) ++ " " ++ show (unitPivot (gUnit (transformUnit t gu0)))) else id) assert (checkTransform t) t
-		return $ Transform e se cw
+generateBaseTargets w h gu0 = interlock [gbtr gu' cw | (gu',cw) <- rotations 0 gu0]
 	where
 		rotations n gur
 			| n < guSymmetryAngle gu0 = (gur,n) : rotations (n+1) (moveUnit (Rotate CW) gur)
@@ -35,6 +27,21 @@ generateBaseTargets w h gu0 = do
 		mse (Cell x y) = if y `mod` 2 == 0 then Cell x (y+1) else Cell (x+1) (y+1)
 		checkTransform t = let tgu = transformUnit t gu0 in all isValidCell (unitMembers (gUnit tgu))
                 isValidCell c@(Cell x y) = x >= 0 && x < w && y >= 0 && y < h
+                gbtr gu' cw = do
+        		let gum = unitMembers $ gUnit gu'
+        		se <- reverse [(max 0 (- minimum (map cellY gum)))..h - 1 - maximum (map cellY gum)]
+	        	let minE = if se `mod` 2 == 0 then
+	        		0 - minimum (map cellX gum) - (se `div` 2)
+		            else
+        		    	0 - minimum (map (cellX . mse) gum) - (se `div` 2)
+	        	let maxE = if se `mod` 2 == 0 then
+		        	w - 1 - maximum (map cellX gum) - (se `div` 2)
+        		    else
+	        	    	w - 1 - maximum (map (cellX . mse) gum) - (se `div` 2)
+		        e <- [minE..maxE]
+        		-- return $ let t = Transform e se cw in (if not $ checkTransform t then trace (show t ++ " " ++ show (unitPivot (gUnit gu0)) ++ " " ++ show (unitPivot (gUnit (transformUnit t gu0)))) else id) assert (checkTransform t) t
+	        	return $ Transform e se cw
+                
 
 
 checkValidEntropy :: State -> Transform -> Maybe (Transform, GUnit, Int)
