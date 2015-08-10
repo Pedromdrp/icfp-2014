@@ -66,9 +66,9 @@ heuristic (st, t, mv) = (abs (transformE t)) + (transformSE t) +  (transformCW t
 isGoal :: (State, Transform, [Move]) -> Bool
 isGoal (st, t, mv) = (transformE t) == 0 && (transformSE t) == 0 && (transformCW t) == 0
 
-findMove :: State -> Transform -> [Move]
+findMove :: State -> Transform -> Maybe [Move]
 findMove st t = case moves of
-                  Nothing -> []
-                  Just xs -> m
+                  Nothing -> Nothing
+                  Just xs -> Just m
                                where (s, t', m) = last xs 
   where moves = aStar neighbours distanceNeighbours heuristic isGoal (st, t, [])
