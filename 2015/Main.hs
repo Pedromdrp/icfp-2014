@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 import Datastructures
 import Parsing
 import LoadConfig
@@ -10,6 +11,7 @@ import Data.List
 import AI
 import Targetting
 import Control.Monad
+import Debug.Trace
 
 fileNames :: [String] -> [String]
 fileNames [] = []
@@ -42,10 +44,11 @@ main = do
         mainLoop s = do
           print s
           print $ entropy $ board s
-          let mm = do
-                (tgt,lm) <- (msum . map return) (transforms3 s)
-                ms <- findMove s tgt
-                return (ms ++ [lm])
+          let mm :: Maybe [Move] = (msum . map return) $ do
+                (tgt,lm) <- (transforms3 s)
+                case findMove s tgt of
+                        Just ms -> return (ms ++ [lm])
+                        Nothing -> mzero
           print mm
           case mm of
                 Nothing -> do
